@@ -155,35 +155,33 @@ ALTER TABLE vk.profiles
 ADD CONSTRAINT profiles_fk_1 
 FOREIGN KEY (photo_id) REFERENCES media(id);
 
-/* создаем таблицу сторис, она должна содержать: одно или несколько фото, объединенных с музыкой или нет, а также должна иметь возможность, вставки элементов
- * также пользователи могут лайкать вставляемые элементы, если они это поддерживают.
- * что у нас должно быть:
- * id 
- * ссылка на фото, их может быть несколько, но не сильно много, можем делать это созданием временного фотоархива, те фотоархив должен быть первичным чем сторис
- * ссылка на музыкальное сопровождение, в одном экземпляре
- * элементы взаимодействия с теми кто смотрит сторис
- */ 
+/*
+ * сторис - несколько фото с разных альбомов с музыкой и эффектами, но может быть одно фото без ничего. главное что его показывают 
+ */
 
-DROP TABLE IF EXISTS `photo_archive`;
-CREATE TABLE `photo_archive` (
-	`id` SERIAL,
-	`name` varchar(255) DEFAULT NULL,
-    `user_id` BIGINT UNSIGNED DEFAULT NULL,
-
-    FOREIGN KEY (user_id) REFERENCES users(id),
-  	PRIMARY KEY (`id`)
+DROP TABLE IF EXISTS effects; -- таблица эффектов для сторис, фактически самостоятельная единица, задаваемая создателем программы, как медиатипы
+CREATE TABLE effects(
+	id SERIAL,
+    body text,
+    filename VARCHAR(255), 	
+    size INT,
+	metadata JSON,
+    created_at DATETIME DEFAULT NOW(),
+    updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
 );
 
+-- добавить реакции на сторис, организованные эффектами
 
 DROP TABLE IF EXISTS `stories`;
-CREATE TABLE `photos` (
+CREATE TABLE `stories` (
 	id SERIAL,
-	`album_id` BIGINT unsigned NULL,
-	`media_id` BIGINT unsigned NOT NULL,
-
-	FOREIGN KEY (album_id) REFERENCES photo_albums(id),
+	`media_id` BIGINT unsigned NOT NULL, -- один элемент должен быть обязательно
+	`effects_id` BIGINT unsigned NULL, -- эффект не обязателен
+	
     FOREIGN KEY (media_id) REFERENCES media(id)
+    FOREIGN KEY (effects_id) REFERENCES effects(id)
+    created_at DATETIME DEFAULT NOW(),
+    updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
 );
-
 
 
