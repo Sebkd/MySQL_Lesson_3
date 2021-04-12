@@ -155,33 +155,41 @@ ALTER TABLE vk.profiles
 ADD CONSTRAINT profiles_fk_1 
 FOREIGN KEY (photo_id) REFERENCES media(id);
 
-/*
- * сторис - несколько фото с разных альбомов с музыкой и эффектами, но может быть одно фото без ничего. главное что его показывают 
- */
+/* Написать сообщение внутри сообщества*/
 
-DROP TABLE IF EXISTS effects; -- таблица эффектов для сторис, фактически самостоятельная единица, задаваемая создателем программы, как медиатипы
-CREATE TABLE effects(
+DROP TABLE IF EXISTS messages_communities;
+CREATE TABLE messages_communities (
+	id SERIAL, 
+	from_user_id BIGINT UNSIGNED NOT NULL,
+    to_communities_id BIGINT UNSIGNED NOT NULL,
+    body TEXT,
+    created_at DATETIME DEFAULT NOW(), 
+
+    FOREIGN KEY (from_user_id) REFERENCES users(id),
+    FOREIGN KEY (to_communities_id) REFERENCES communities(id)
+) COMMENT 'сообщения внутри сообщества';
+
+/* лайки сообщениям */
+
+DROP TABLE IF EXISTS likes_messages;
+CREATE TABLE likes_messages(
 	id SERIAL,
-    body text,
-    filename VARCHAR(255), 	
-    size INT,
-	metadata JSON,
+    user_id BIGINT UNSIGNED NOT NULL,
+    messages_id BIGINT UNSIGNED NOT NULL,
     created_at DATETIME DEFAULT NOW(),
-    updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
-);
 
--- добавить реакции на сторис, организованные эффектами
+	FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (messages_id) REFERENCES messages(id)
+) COMMENT 'лайки сообщениям';
 
-DROP TABLE IF EXISTS `stories`;
-CREATE TABLE `stories` (
+/* лайки сообщениям внутри сообщества */
+DROP TABLE IF EXISTS likes_messages_communities;
+CREATE TABLE likes_messages_communities(
 	id SERIAL,
-	`media_id` BIGINT unsigned NOT NULL, -- один элемент должен быть обязательно
-	`effects_id` BIGINT unsigned NULL, -- эффект не обязателен
-	
-    FOREIGN KEY (media_id) REFERENCES media(id)
-    FOREIGN KEY (effects_id) REFERENCES effects(id)
+    user_id BIGINT UNSIGNED NOT NULL,
+    messages_communities_id BIGINT UNSIGNED NOT NULL,
     created_at DATETIME DEFAULT NOW(),
-    updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
-);
 
-
+	FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (messages_communities_id) REFERENCES messages_communities(id)
+) COMMENT 'лайки сообщениям внутри сообщества';
