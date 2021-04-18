@@ -135,7 +135,7 @@ CREATE TABLE `photo_albums` (
 
 DROP TABLE IF EXISTS `photos`;
 CREATE TABLE `photos` (
-	id SERIAL,
+	`id` SERIAL,
 	`album_id` BIGINT unsigned NULL,
 	`media_id` BIGINT unsigned NOT NULL,
 
@@ -143,14 +143,53 @@ CREATE TABLE `photos` (
     FOREIGN KEY (media_id) REFERENCES media(id)
 );
 
-ALTER TABLE vk.likes 
+ALTER TABLE likes 
 ADD CONSTRAINT likes_fk 
-FOREIGN KEY (media_id) REFERENCES vk.media(id);
+FOREIGN KEY (media_id) REFERENCES media(id);
 
-ALTER TABLE vk.likes 
+ALTER TABLE likes 
 ADD CONSTRAINT likes_fk_1 
-FOREIGN KEY (user_id) REFERENCES vk.users(id);
+FOREIGN KEY (user_id) REFERENCES users(id);
 
-ALTER TABLE vk.profiles 
+ALTER TABLE profiles 
 ADD CONSTRAINT profiles_fk_1 
 FOREIGN KEY (photo_id) REFERENCES media(id);
+
+/* Написать сообщение внутри сообщества*/
+
+DROP TABLE IF EXISTS `messages_communities`;
+CREATE TABLE `messages_communities` (
+	`id` SERIAL, 
+	`from_user_id` BIGINT UNSIGNED NOT NULL,
+    `to_communities_id` BIGINT UNSIGNED NOT NULL,
+    `body` TEXT,
+    `created_at` DATETIME DEFAULT NOW(), 
+
+    FOREIGN KEY (`from_user_id`) REFERENCES users(`id`),
+    FOREIGN KEY (`to_communities_id`) REFERENCES communities(`id`)
+) COMMENT 'сообщения внутри сообщества';
+
+/* лайки сообщениям */
+
+DROP TABLE IF EXISTS `likes_messages`;
+CREATE TABLE `likes_messages`(
+	`id` SERIAL,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `messages_id` BIGINT UNSIGNED NOT NULL,
+    `created_at` DATETIME DEFAULT NOW(),
+
+	FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+    FOREIGN KEY (`messages_id`) REFERENCES messages(`id`)
+) COMMENT 'лайки сообщениям';
+
+/* лайки сообщениям внутри сообщества */
+DROP TABLE IF EXISTS `likes_messages_communities`;
+CREATE TABLE `likes_messages_communities`(
+	`id` SERIAL,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `messages_communities_id` BIGINT UNSIGNED NOT NULL,
+    `created_at` DATETIME DEFAULT NOW(),
+
+	FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+    FOREIGN KEY (`messages_communities_id`) REFERENCES messages_communities(`id`)
+) COMMENT 'лайки сообщениям внутри сообщества';
